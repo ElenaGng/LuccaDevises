@@ -4,8 +4,8 @@ using System.Text;
 
 namespace LuccaDevises.Module
 {
-    public interface ICurrencyExchange
+    public interface IFileManager
     {
-        void ConvertCurrencyFromExternalFile(string FullFilePath);
+        object[] ReadExternalCurrencyExchageFile(string FullFilePath);
     }
 }

@@ -2,36 +2,25 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using FileHelpers;
-using FileHelpers.Events;
 using LuccaDevises.Entities;
 
 namespace LuccaDevises.Module
 {
     public class CurrencyExchange : ICurrencyExchange
     {
-        public CurrencyToConvert TargetCurrencyToConvert { get; set; }
-        public List<CurrencyRate> CurrencyRates { get; set; }
+        private IFileManager fileManager;
 
-        public CurrencyExchange()
+        public CurrencyExchange(IFileManager _fileManager)
         {
-            TargetCurrencyToConvert = new CurrencyToConvert();
-            CurrencyRates = new List<CurrencyRate>();
+            fileManager = _fileManager;
         }
 
-        public void ConvertCurrencyFromExternalFile ()
+        public void ConvertCurrencyFromExternalFile (string FullFilePath)
         {
-            var FullFilePath = "C:\\Users\\Elena\\Desktop\\DeviseToConvert.csv";
+            var TargetCurrencyToConvert = new CurrencyToConvert();
+            var CurrencyRates = new List<CurrencyRate>();
 
-            FileInfo finfo = new FileInfo(FullFilePath);
-
-            if (!finfo.Exists || finfo.Length == 0)
-            {
-                Console.Write($"This file does not exist or is empty : {FullFilePath}");
-            }
-
-            var rows = ReadExternalFile(FullFilePath);
+            var rows = fileManager.ReadExternalCurrencyExchageFile(FullFilePath);
 
             foreach (var item in rows)
             {
@@ -45,45 +34,10 @@ namespace LuccaDevises.Module
                 }                    
             }
 
-            var result = Math.Round(ExchageCalculator(TargetCurrencyToConvert, CurrencyRates),0);
+            var result = ExchageCalculator(TargetCurrencyToConvert, CurrencyRates);
         }
 
-        /// <summary>
-        /// Read an external file using MultiRecordEngine
-        /// </summary>
-        /// <param name="FullFilePath"></param>
-        /// <returns>An single dimentional array with all the rows in the file</returns>
-        private object[] ReadExternalFile(string FullFilePath)
-        {          
-            using (FileStream fs = new FileStream(FullFilePath, FileMode.Open, FileAccess.Read))
-            {
-                var engine = new MultiRecordEngine(typeof(CurrencyToConvert), typeof(CurrencyRate));
-
-                engine.RecordSelector = new RecordTypeSelector(CustomSelector);
-
-                return engine.ReadFile(FullFilePath);
-            }            
-        }
-
-        /// <summary>
-        /// Get the type of the row in the file
-        /// </summary>
-        /// <param name="engine"></param>
-        /// <param name="recordLine"></param>
-        /// <returns></returns>
-        private Type CustomSelector(MultiRecordEngine engine, string recordLine)
-        {
-            //Return null if the line is empty or is the second one -> I don't need it ;)
-            if (recordLine.Length == 0 || engine.LineNumber == 2)
-                return null;      
-
-            if (Char.IsNumber(recordLine[5]))
-                return typeof(CurrencyToConvert);
-
-            else
-                return typeof(CurrencyRate);
-        }
-
+       
         private decimal ExchageCalculator(CurrencyToConvert currencyToConvert, List<CurrencyRate> currencyRates)
         {
             var currenciesInUse = new Dictionary<string, decimal>(StringComparer.CurrentCultureIgnoreCase);
@@ -129,7 +83,7 @@ namespace LuccaDevises.Module
                 currenciesInUse.Remove(CurrencyInUse.Key);
             }
 
-            return currenciesInUse.FirstOrDefault(m => m.Key == currencyToConvert.InputCurrencyTo).Value;
+            return Math.Round(currenciesInUse.FirstOrDefault(m => m.Key == currencyToConvert.InputCurrencyTo).Value,0);
         }
     }
 }
