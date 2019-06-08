@@ -15,13 +15,19 @@ namespace LuccaDevises.Module
             fileManager = _fileManager;
         }
 
-        public void ConvertCurrencyFromExternalFile (string FullFilePath)
+        /// <summary>
+        /// Read an external file and convert currency
+        /// </summary>
+        /// <param name="FullFilePath"></param>
+        public decimal ConvertCurrencyFromExternalFile (string FullFilePath)
         {
             var TargetCurrencyToConvert = new CurrencyToConvert();
             var CurrencyRates = new List<CurrencyRate>();
 
+            //Read Te file and get all the rows from file
             var rows = fileManager.ReadExternalCurrencyExchageFile(FullFilePath);
 
+            //Mapping of the rows to TargetCurrencyToConvert and CurrencyRates information
             foreach (var item in rows)
             {
                 if (typeof(CurrencyToConvert) == item.GetType())
@@ -34,56 +40,95 @@ namespace LuccaDevises.Module
                 }                    
             }
 
+            //Calculate the exchange rate
             var result = ExchageCalculator(TargetCurrencyToConvert, CurrencyRates);
+
+            //Show the result in the console and return its value.
+            Console.WriteLine(result);
+
+            return result;
         }
 
-       
+        /// <summary>
+        /// Calculate Currency exchange From/To and amount by using a list of currency rates
+        /// </summary>
+        /// <param name="currencyToConvert"></param>
+        /// <param name="currencyRates"></param>
+        /// <returns></returns>
         private decimal ExchageCalculator(CurrencyToConvert currencyToConvert, List<CurrencyRate> currencyRates)
         {
-            var currenciesInUse = new Dictionary<string, decimal>(StringComparer.CurrentCultureIgnoreCase);
-            currenciesInUse.Add(currencyToConvert.InputCurrencyFrom, currencyToConvert.InputAmountToExchage);
+            //The intermediate result from evaluating all currencies one to one, starting from the InputCurrencyFrom
+            var currenciesUsed = new Dictionary<string, decimal>(StringComparer.CurrentCultureIgnoreCase);
+            currenciesUsed.Add(currencyToConvert.InputCurrencyFrom, currencyToConvert.InputAmountToExchage);
 
-            var allCurrencies = new List<string>();
-
-            foreach (var item in currencyRates)
+            try
             {
-                if (!allCurrencies.Contains(item.CurrencyFrom))
+                //Create a list of all the currencies from the currencyRates (information)
+                var allCurrencies = new List<string>();
+
+                foreach (var item in currencyRates)
                 {
-                    allCurrencies.Add(item.CurrencyFrom);
-                }
-
-                if (!allCurrencies.Contains(item.CurrencyTo))
-                {
-                    allCurrencies.Add(item.CurrencyTo);
-                }
-            }
-
-            while (!currenciesInUse.Any(m => m.Key == currencyToConvert.InputCurrencyTo) && allCurrencies.Any())
-            {
-                var CurrencyInUse = currenciesInUse.First();
-                allCurrencies.Remove(CurrencyInUse.Key);
-
-                var NextCurrenciesInUse = currencyRates.Where(m => m.CurrencyFrom == CurrencyInUse.Key || m.CurrencyTo == CurrencyInUse.Key);
-
-                foreach (var NextCurrency in NextCurrenciesInUse)
-                {
-                    if (NextCurrency.CurrencyTo == CurrencyInUse.Key)
+                    if (!allCurrencies.Contains(item.CurrencyFrom))
                     {
-                        NextCurrency.CurrencyTo = NextCurrency.CurrencyFrom;
-                        NextCurrency.CurrencyFrom = CurrencyInUse.Key;                        
-                        NextCurrency.Rate = Math.Round(1 / NextCurrency.Rate, 4);
+                        allCurrencies.Add(item.CurrencyFrom);
                     }
 
-                    if (allCurrencies.Contains(NextCurrency.CurrencyTo))
+                    if (!allCurrencies.Contains(item.CurrencyTo))
                     {
-                        currenciesInUse.Add(NextCurrency.CurrencyTo, Math.Round(NextCurrency.Rate * CurrencyInUse.Value, 4));
-                    }                    
+                        allCurrencies.Add(item.CurrencyTo);
+                    }
                 }
 
-                currenciesInUse.Remove(CurrencyInUse.Key);
-            }
+                if (!allCurrencies.Contains(currencyToConvert.InputCurrencyFrom))
+                {
+                    throw new Exception($"Currency rate list doesn't contain the Input Currency : <{currencyToConvert.InputCurrencyFrom}>");
+                }
 
-            return Math.Round(currenciesInUse.FirstOrDefault(m => m.Key == currencyToConvert.InputCurrencyTo).Value,0);
+                if (!allCurrencies.Contains(currencyToConvert.InputCurrencyTo))
+                {
+                    throw new Exception($"Currency rate list doesn't contain the Input Currency : <{currencyToConvert.InputCurrencyTo}>");
+                }
+
+                //Loop finish when the InputCurrencyTo is in the list of currenciesUsed - It means i already have the result from evaluation
+                while (currenciesUsed.Any() && !currenciesUsed.Any(m => m.Key == currencyToConvert.InputCurrencyTo) && allCurrencies.Any())
+                {
+                    //CurrencyInUse is the currency in evaluation
+                    var CurrencyInUse = currenciesUsed.First();
+                    allCurrencies.Remove(CurrencyInUse.Key);
+
+                    //Next currencies to be evaluated linked to CurrencyInUse.
+                    var NextCurrenciesInUse = currencyRates.Where(m => m.CurrencyFrom == CurrencyInUse.Key || m.CurrencyTo == CurrencyInUse.Key);
+
+                    foreach (var NextCurrency in NextCurrenciesInUse)
+                    {
+                        if (NextCurrency.CurrencyTo == CurrencyInUse.Key)
+                        {
+                            NextCurrency.CurrencyTo = NextCurrency.CurrencyFrom;
+                            NextCurrency.CurrencyFrom = CurrencyInUse.Key;
+                            NextCurrency.Rate = Math.Round(1 / NextCurrency.Rate, 4);
+                        }
+
+                        if (allCurrencies.Contains(NextCurrency.CurrencyTo))
+                        {
+                            currenciesUsed.Add(NextCurrency.CurrencyTo, Math.Round(NextCurrency.Rate * CurrencyInUse.Value, 4));
+                        }
+                    }
+
+                    //Remove the currency already evaluated
+                    currenciesUsed.Remove(CurrencyInUse.Key);
+                }
+
+                if (!currenciesUsed.Any())
+                {
+                    throw new Exception("Error : List of currency rates incomplete - No match was found ");
+                }
+
+                return Math.Round(currenciesUsed.FirstOrDefault(m => m.Key == currencyToConvert.InputCurrencyTo).Value, 0);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
     }
 }

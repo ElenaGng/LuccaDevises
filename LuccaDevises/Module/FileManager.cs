@@ -18,21 +18,37 @@ namespace LuccaDevises.Module
         /// <returns>An single dimentional array with all the rows in the file</returns>
         public object[] ReadExternalCurrencyExchageFile(string FullFilePath)
         {
-            FileInfo finfo = new FileInfo(FullFilePath);
-
-            if (!finfo.Exists || finfo.Length == 0)
+            try
             {
-                Console.Write($"This file does not exist or is empty : {FullFilePath}");
-                return null;
+                FileInfo finfo = new FileInfo(FullFilePath);
+
+                if (finfo.Length == 0)
+                    throw new Exception($"The file <{FullFilePath}> is empty");
+
+                using (FileStream fs = new FileStream(FullFilePath, FileMode.Open, FileAccess.Read))
+                {
+                    var engine = new MultiRecordEngine(typeof(CurrencyToConvert), typeof(CurrencyRate));
+
+                    engine.RecordSelector = new RecordTypeSelector(CustomSelector);
+
+                    return engine.ReadFile(FullFilePath);
+                }
             }
-
-            using (FileStream fs = new FileStream(FullFilePath, FileMode.Open, FileAccess.Read))
+            catch (FileNotFoundException e)
             {
-                var engine = new MultiRecordEngine(typeof(CurrencyToConvert), typeof(CurrencyRate));
-
-                engine.RecordSelector = new RecordTypeSelector(CustomSelector);
-
-                return engine.ReadFile(FullFilePath);
+                throw new FileNotFoundException($"The file <{FullFilePath}> was not found: '{e.Message}'");
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                throw new DirectoryNotFoundException($"The directory was not found: '{e.Message}'");
+            }
+            catch (IOException e)
+            {
+                throw new IOException($"The file <{FullFilePath}> could not be opened: '{e.Message}'");
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"An error in method ReadExternalCurrencyExchageFile : '{e.Message}'");
             }
         }
 

@@ -5,6 +5,9 @@ using System.Text;
 
 namespace LuccaDevises.Entities
 {
+    /// <summary>
+    /// Currency information (from/to and rate)
+    /// </summary>
     [DelimitedRecord(";")]
     [IgnoreEmptyLines]
     public class CurrencyRate

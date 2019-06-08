@@ -6,6 +6,6 @@ namespace LuccaDevises.Module
 {
     public interface ICurrencyExchange
     {
-        void ConvertCurrencyFromExternalFile(string FullFilePath);
+        decimal ConvertCurrencyFromExternalFile(string FullFilePath);
     }
 }
