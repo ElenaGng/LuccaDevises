@@ -45,7 +45,7 @@ namespace LuccaDevises.Module
                 }                    
             }
 
-            var result = ExchageCalculator(TargetCurrencyToConvert, CurrencyRates);
+            var result = Math.Round(ExchageCalculator(TargetCurrencyToConvert, CurrencyRates),0);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace LuccaDevises.Module
 
         private decimal ExchageCalculator(CurrencyToConvert currencyToConvert, List<CurrencyRate> currencyRates)
         {
-            var currenciesInUse = new Dictionary<string, decimal>();
+            var currenciesInUse = new Dictionary<string, decimal>(StringComparer.CurrentCultureIgnoreCase);
             currenciesInUse.Add(currencyToConvert.InputCurrencyFrom, currencyToConvert.InputAmountToExchage);
 
             var allCurrencies = new List<string>();
@@ -105,7 +105,7 @@ namespace LuccaDevises.Module
             }
 
             while (!currenciesInUse.Any(m => m.Key == currencyToConvert.InputCurrencyTo) && allCurrencies.Any())
-            {                
+            {
                 var CurrencyInUse = currenciesInUse.First();
                 allCurrencies.Remove(CurrencyInUse.Key);
 
@@ -133,15 +133,3 @@ namespace LuccaDevises.Module
         }
     }
 }
-
-
-//using (FileStream fs = File.OpenRead(path))
-//{
-//    byte[] b = new byte[1024];
-//    UTF8Encoding temp = new UTF8Encoding(true);
-
-//    while (fs.Read(b, 0, b.Length) > 0)
-//    {
-//        var a = temp.GetString(b);
-//    }
-//}

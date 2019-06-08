@@ -9,8 +9,13 @@ namespace LuccaDevises.Entities
     [IgnoreEmptyLines]
     public class CurrencyRate
     {
+        [FieldTrim(TrimMode.Both)]
         public string CurrencyFrom { get; set; }
+
+        [FieldTrim(TrimMode.Both)]
         public string CurrencyTo { get; set; }
+
+        [FieldTrim(TrimMode.Both)]
         public decimal Rate { get; set; }
     }
 }
