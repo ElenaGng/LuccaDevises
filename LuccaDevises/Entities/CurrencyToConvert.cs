@@ -11,6 +11,6 @@ namespace LuccaDevises.Entities
     {
         public string InputCurrencyFrom { get; set; }
         public decimal InputAmountToExchage { get; set; }
-        public string InputCurrencyTo { get; set; }        
+        public string InputCurrencyTo { get; set; }
     }
 }
