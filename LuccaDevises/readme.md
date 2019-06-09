@@ -1,13 +1,12 @@
 ﻿# LuccaDevises Projet by Elena GENGE 8-)
 Recrutement Test for Back-end Developer - June 2019
-.Net core 2.2
-C#
+.Net core 2.2 - C#
 
 ## How to run the application using CLI ?
 1. Create/modify a Currency Exchange File following the rules ;)
 .csv or .txt are both accepted !
 
-2. Place yourself in the repository folder that contains LuccaDevises.exe 
+2. Place yourself in the repository folder that contains LuccaDevises.exe
 
 For example --> C:\Users\Elena\source\repos\LuccaDevises\LuccaDevises\bin\Release\netcoreapp2.2\win10-x64
 
@@ -22,27 +21,27 @@ $ LuccaDevises.exe <FullFilePath to Currency Exchange File>
 
 Element should be separated with ;
 
-**First line** 
+**First line**
 
 The first line contains:
 InputCurrencyFrom in which the amount is displayed [3-character code]
 InputAmountToExchage in this initial currency as a positive integer > 0
 InputCurrencyToThe is the target currency to which it wants to convert the amount [3-character code]
 
-The information should be in the format: 
+The information should be in the format:
 InputCurrencyFrom;InputAmountToExchage;InputCurrencyTo
 
-**Second line** 
+**Second line**
 It should contains : Number of information lines
 
-**Others lines** 
+**Others lines**
 
 There follows N lines representing the exchange rates represented as follows:
 CurrencyFrom : The starting currency [3-character code]
 CurrencyTo : The target currency [3-character code]
 Rate : The exchange rate [4 decimal with a "." As a decimal separator]
 
-The information should be in the format: 
+The information should be in the format:
 CurrencyFrom;CurrencyTo;Rate
 
 For example:
