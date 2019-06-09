@@ -1,4 +1,7 @@
 ﻿# LuccaDevises Projet by Elena GENGE 8-)
+Recrutement Test for Back-end Developer - June 2019
+.Net core 2.2
+C#
 
 ## How to run the application using CLI ?
 1. Create/modify a Currency Exchange File following the rules ;)
@@ -20,13 +23,27 @@ $ LuccaDevises.exe <FullFilePath to Currency Exchange File>
 Element should be separated with ;
 
 **First line** 
-It should contains the input of the request : InputCurrencyFrom;InputAmountToExchage;InputCurrencyTo
+
+The first line contains:
+InputCurrencyFrom in which the amount is displayed [3-character code]
+InputAmountToExchage in this initial currency as a positive integer > 0
+InputCurrencyToThe is the target currency to which it wants to convert the amount [3-character code]
+
+The information should be in the format: 
+InputCurrencyFrom;InputAmountToExchage;InputCurrencyTo
 
 **Second line** 
 It should contains : Number of information lines
 
 **Others lines** 
-It should contains all the rates information : CurrencyFrom;CurrencyTo;Rate
+
+There follows N lines representing the exchange rates represented as follows:
+CurrencyFrom : The starting currency [3-character code]
+CurrencyTo : The target currency [3-character code]
+Rate : The exchange rate [4 decimal with a "." As a decimal separator]
+
+The information should be in the format: 
+CurrencyFrom;CurrencyTo;Rate
 
 For example:
 
@@ -40,4 +57,40 @@ EUR;USD;1.2989
 JPY;INR;0.6571
 
 ----
+## How does the application works ?
+
+**If multiple conversion paths allow you to reach the target currency, the shortest path will be used !**
+
+For example, if you want 550 Euros (EUR) in Yen (JPY), and you have this exchange rate list:
+
+| Currency From |  Currency To  | Exchage Rate  |
+| ------------- |:-------------:| -------------:|
+|      AUD      |      CHF      |    0.9661     |
+|      JPY      |      KWU      |    13.1151    |
+|      EUR      |      CHF      |    1.2053     |
+|      AUD      |      JPY      |   86.0305     |
+|      EUR      |      USD      |    1.2989     |
+|      JPY      |      INR      |    0.6571     |
+
+
+To convert EUR to JPY, you need to convert the expense amount to CHF, then AUD, then JPY, using the following rates:
+
+| Currency From |  Currency To  | Exchage Rate  |
+| ------------- |:-------------:| -------------:|
+|      AUD      |      CHF      |    0.9661     |
+|      EUR      |      CHF      |    1.2053     |
+|      AUD      |      JPY      |   86.0305     |
+
+
+In the case of the example, the result is as follows:
+
+EUR -> CHF: 550 * 1.2053 = 662.9150
+CHF -> AUD: 662.9150 * (1 / 0.9661) = 686.1833
+(Attention, here we reverse the rate because the rate provided is
+AUD -> CHF and we want CHF -> AUD.
+The inversion must also be rounded to 4 decimal places, so 1 / 0.9661 = 1.0351
+AUD -> JPY: 686.1833 * 86.0305 = 59033 (rounded to the integer)
+
+The expected result is 59033.
+
 ## Have fun !!

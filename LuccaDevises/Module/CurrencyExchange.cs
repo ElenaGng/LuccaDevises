@@ -64,30 +64,10 @@ namespace LuccaDevises.Module
             try
             {
                 //Create a list of all the currencies from the currencyRates (information)
-                var allCurrencies = new List<string>();
+                var allCurrencies = GetAllCurrenciesInList(currencyRates);
 
-                foreach (var item in currencyRates)
-                {
-                    if (!allCurrencies.Contains(item.CurrencyFrom))
-                    {
-                        allCurrencies.Add(item.CurrencyFrom);
-                    }
-
-                    if (!allCurrencies.Contains(item.CurrencyTo))
-                    {
-                        allCurrencies.Add(item.CurrencyTo);
-                    }
-                }
-
-                if (!allCurrencies.Contains(currencyToConvert.InputCurrencyFrom))
-                {
-                    throw new Exception($"Currency rate list doesn't contain the Input Currency : <{currencyToConvert.InputCurrencyFrom}>");
-                }
-
-                if (!allCurrencies.Contains(currencyToConvert.InputCurrencyTo))
-                {
-                    throw new Exception($"Currency rate list doesn't contain the Input Currency : <{currencyToConvert.InputCurrencyTo}>");
-                }
+                //Check if the list of currency rate (information) has any error
+                CheckError(allCurrencies, currencyToConvert, currencyRates);
 
                 //Loop finish when the InputCurrencyTo is in the list of currenciesUsed - It means i already have the result from evaluation
                 while (currenciesUsed.Any() && !currenciesUsed.Any(m => m.Key == currencyToConvert.InputCurrencyTo) && allCurrencies.Any())
@@ -120,7 +100,7 @@ namespace LuccaDevises.Module
 
                 if (!currenciesUsed.Any())
                 {
-                    throw new Exception("Error : List of currency rates incomplete - No match was found ");
+                    throw new Exception("Error : List of currency rates incomplete - No match was found");
                 }
 
                 return Math.Round(currenciesUsed.FirstOrDefault(m => m.Key == currencyToConvert.InputCurrencyTo).Value, 0);
@@ -129,6 +109,38 @@ namespace LuccaDevises.Module
             {
                 throw new Exception(e.Message);
             }
+        }
+
+        private List<string> GetAllCurrenciesInList(List<CurrencyRate> currencyRates)
+        {
+            var result = new List<string>();
+
+            foreach (var item in currencyRates)
+            {
+                if (!result.Contains(item.CurrencyFrom))
+                {
+                    result.Add(item.CurrencyFrom);
+                }
+
+                if (!result.Contains(item.CurrencyTo))
+                {
+                    result.Add(item.CurrencyTo);
+                }
+            }
+
+            return result;
+        }
+
+        private void CheckError(List<string> allCurrencies, CurrencyToConvert currencyToConvert, List<CurrencyRate> currencyRates)
+        {
+            if (!allCurrencies.Contains(currencyToConvert.InputCurrencyFrom))
+                throw new Exception($"Error : Currency rate list doesn't contain the Input Currency : <{currencyToConvert.InputCurrencyFrom}>");          
+
+            if (!allCurrencies.Contains(currencyToConvert.InputCurrencyTo))
+                throw new Exception($"Error : Currency rate list doesn't contain the Input Currency : <{currencyToConvert.InputCurrencyTo}>");
+
+            if (currencyRates.Any(m => m.Rate < 0) || currencyToConvert.InputAmountToExchage < 0)
+                throw new Exception("Error : Currency rate cannot be negative !");
         }
     }
 }
