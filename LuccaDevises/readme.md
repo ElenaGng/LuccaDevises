@@ -1,4 +1,4 @@
-﻿# LuccaDevises Projet by Elena GENGE 8-)
+﻿# LuccaDevises Projet by Elena GENGE ^^
 Recrutement Test for Back-end Developer - June 2019
 .Net core 2.2 - C#
 
@@ -47,13 +47,13 @@ CurrencyFrom;CurrencyTo;Rate
 For example:
 
 EUR;550;JPY  
-6
-AUD;CHF;0.9661
-JPY;KRW;13.1151
-EUR;CHF;1.2053
-AUD;JPY;86.0305
-EUR;USD;1.2989
-JPY;INR;0.6571
+6  
+AUD;CHF;0.9661  
+JPY;KRW;13.1151  
+EUR;CHF;1.2053  
+AUD;JPY;86.0305  
+EUR;USD;1.2989  
+JPY;INR;0.6571  
 
 ----
 ## How does the application works ?
